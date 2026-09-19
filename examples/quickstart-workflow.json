@@ -1,0 +1,106 @@
+{
+  "id": "a09abed6-ce14-5586-aa50-19212d53ab73",
+  "name": "Trustpilot Reviews → Reputation action queue",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "50fdc261-9180-503c-855d-eb6135db0722",
+      "name": "When clicking Execute workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup\n1. Select your Apify API credential.\n2. Replace the sample company.\n3. Adjust rating and date filters.\n4. Send the final action queue to support, reputation or reporting workflows.",
+        "height": 300,
+        "width": 460
+      },
+      "id": "badcb108-7e35-504f-90c2-972b7b861460",
+      "name": "How to use this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "startUrls": "https://www.trustpilot.com/review/canva.com",
+        "searchTerms": "",
+        "contentMode": "reviews",
+        "maxReviews": 20,
+        "dateRange": "last30days",
+        "filterStars": [
+          "1",
+          "2",
+          "3"
+        ],
+        "verifiedOnly": false,
+        "repliesOnly": false,
+        "strictNameMatch": true,
+        "includeReviewInsights": true,
+        "includeCompanyDetails": true,
+        "compact": false,
+        "sortBy": "recency"
+      },
+      "id": "7156a5b7-099a-5250-981d-d820d6f6beea",
+      "name": "Collect Trustpilot reviews",
+      "type": "n8n-nodes-apivault-trustpilot.trustpilot",
+      "typeVersion": 1,
+      "position": [
+        260,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j = $json; const rating = Number(j.rating ?? j.stars ?? 0); return { json: { ...j, reputationAction: { company: j.companyName ?? j.company ?? j.domain ?? '', rating, reviewText: j.text ?? j.reviewText ?? '', replyPresent: Boolean(j.reply ?? j.ownerReply), priority: rating > 0 && rating <= 2 ? 'high' : rating === 3 ? 'medium' : 'normal', reviewUrl: j.reviewUrl ?? j.url ?? '' } } };"
+      },
+      "id": "ba6ba625-534c-57c8-824d-b8baeb708887",
+      "name": "Build reputation action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        580,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking Execute workflow": {
+      "main": [
+        [
+          {
+            "node": "Collect Trustpilot reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Trustpilot reviews": {
+      "main": [
+        [
+          {
+            "node": "Build reputation action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "79bb70c9-3558-5b5d-a1bc-d50809e0643e",
+  "tags": []
+}
